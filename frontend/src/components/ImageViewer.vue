@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-4">
-    <div class="row">
+    <div class="row mb-4">
       <div class="col-md-8">
         <div
             class="image-container position-relative"
@@ -16,40 +16,42 @@
       </div>
       <div class="col-md-4">
         <div class="zoom-control mb-4">
-          <div class="d-flex align-items-center">
+          <div class="d-flex  align-items-center">
             <i class="bi bi-search"></i>
-            <label for="zoom" class="label m-2">
+            <label for="zoom" class="label m-4">
               Zoom: {{zoom}}x
             </label>
-          </div>
-          <input
-              id="zoom"
-              class="form-range"
-              type="range"
-              min="1"
-              max="10"
-              step="1"
-              v-model="zoom"
-          />
-        </div>
-        <div class="color-controls">
-          <div v-for="(color, index) in getRGB" :key="index">
-            <i class="bi bi-brightness-low-fill" :style="{ color: color }"></i>
-            <label class="label m-2">
-              {{ color }}: {{ colorValues[color]}}%
-            </label>
+          </div >
+          <div class="vertical-input">
             <input
-                :id="color"
+                id="zoom"
                 class="form-range"
                 type="range"
+                min="1"
+                max="10"
                 step="1"
-                :min="0"
-                :max="100"
-                :value="colorValues[color]"
-                @input="changeColor(color, $event.target.value)"
+                v-model="zoom"
             />
           </div>
         </div>
+      </div>
+    </div>
+    <div class="color-controls  d-flex flex-wrap">
+      <div v-for="(color, index) in getRGB" :key="index" class="mx-4">
+        <i class="bi bi-brightness-low-fill" :style="{ color: color }"></i>
+        <label class="label m-2">
+          {{ color }}: {{ colorValues[color]}}%
+        </label>
+        <input
+            :id="color"
+            class="form-range"
+            type="range"
+            step="1"
+            :min="0"
+            :max="100"
+            :value="colorValues[color]"
+            @input="changeColor(color, $event.target.value)"
+        />
       </div>
     </div>
   </div>
@@ -99,6 +101,7 @@ export default {
         this.colorValues.blue = value;
       }
       this.activeColor = color;
+      this.reColor();
     },
     keyDown(e) {
       if (e.code === "KeyR") {
@@ -129,7 +132,9 @@ export default {
         } else if (this.activeColor === "blue") {
           this.colorValues.blue = Math.min(100, this.colorValues.blue + 1);
         }
-      }
+      }else return;
+
+      this.reColor();
     },
 
     moveMagnifier(e) {
@@ -178,6 +183,41 @@ export default {
       this.zoom = Math.min(10, Math.max(1, newZoom));
       this.moveMagnifier(e);
     },
+    reColor() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 768;
+      canvas.height = 432;
+      const starterXAndY = 0;
+      const activeColorIndex = this.getActiveColorIndex();
+      const hundredthOfActiveColorValue = this.colorValues[`${this.activeColor}`] * 0.01
+
+      const context = canvas.getContext("2d");
+      context.drawImage(this.$refs.image, starterXAndY, starterXAndY, canvas.width, canvas.height);
+
+      const imageData = context.getImageData(starterXAndY, starterXAndY, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      if (!this.originalImageData) {
+        this.originalImageData = imageData;
+        this.originalData = new Uint8ClampedArray(data);
+      }
+
+      for (let i = 0; i < data.length; i += 4) {
+        data[i+activeColorIndex] = Math.min(255, this.originalData[i+activeColorIndex] * hundredthOfActiveColorValue);
+
+      }
+
+      context.putImageData(imageData, starterXAndY, starterXAndY);
+      this.$refs.image.src = canvas.toDataURL();
+    },
+    getActiveColorIndex(){
+        if(this.activeColor === "red"){
+          return 0
+        }else if(this.activeColor === "green"){
+          return 1;
+        }
+        return 2;
+    }
   },
 };
 </script>
@@ -202,6 +242,16 @@ export default {
 
 .form-range[id="zoom"]::-webkit-slider-runnable-track {
   background-color: yellow;
+}
+
+.form-range {
+  width: 100%;
+}
+
+.vertical-input {
+  margin-top:20%;
+  transform: rotate(-90deg);
+  width:50%
 }
 
 </style>
