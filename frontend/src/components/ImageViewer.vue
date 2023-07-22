@@ -65,7 +65,8 @@ export default {
       imageSrc: require('@/assets/hague.jpg'),
       zoom: 2,
       showMagnifier: false,
-      magnifier: {},
+      magnifier: {borderRadius: "50%"},
+      isMagnifierEntered:false,
       activeColor: "red",
       colorValues: {
         red: 100,
@@ -73,6 +74,7 @@ export default {
         blue: 100,
       },
     };
+
   },
   computed: {
     getRGB() {
@@ -89,7 +91,8 @@ export default {
 
     mouseLeave() {
       this.showMagnifier = false;
-      this.magnifier = {};
+      this.magnifier = {borderRadius: "50%"};
+      this.isMagnifierEntered = false;
     },
 
     changeColor(color, value) {
@@ -135,23 +138,27 @@ export default {
       }else return;
 
       this.reColor();
+      this.magnifier = {...this.magnifier,
+          backgroundColor: `rgb(${this.colorValues.red}%, ${this.colorValues.green}%, ${this.colorValues.blue}%)`,
+      }
     },
 
     moveMagnifier(e) {
 
       const magnifierSize = 100;
       const magnifierCursorDistance = 50;
-      const { left: imgLeft, top: imgTop } = this.$refs.image.getBoundingClientRect();
+      const {left: imgLeft, top: imgTop} = this.$refs.image.getBoundingClientRect();
       const cursorX = e.pageX - imgLeft;
       const cursorY = e.pageY - imgTop;
       const imgWidth = this.$refs.image.width;
       const imgHeight = this.$refs.image.height;
 
-      const magnifierX = this.calculateMagnifierPosition(cursorX, magnifierCursorDistance, magnifierSize,imgWidth);
-      const magnifierY = this.calculateMagnifierPosition(cursorY, magnifierCursorDistance, magnifierSize,imgHeight);
+      const magnifierX = this.calculateMagnifierPosition(cursorX, magnifierCursorDistance, magnifierSize, imgWidth);
+      const magnifierY = this.calculateMagnifierPosition(cursorY, magnifierCursorDistance, magnifierSize, imgHeight);
 
       const bgPosX = this.calculateBackgroundPosition(cursorX, this.zoom, imgWidth, magnifierSize);
       const bgPosY = this.calculateBackgroundPosition(cursorY, this.zoom, imgHeight, magnifierSize);
+
 
       this.magnifier = {
         cursor: "none",
@@ -166,7 +173,19 @@ export default {
         position: "absolute",
         left: `${magnifierX}px`,
         top: `${magnifierY}px`,
+        backgroundBlendMode: "multiply",
+        backgroundColor: `rgb(${this.colorValues.red}%, ${this.colorValues.green}%, ${this.colorValues.blue}%)`,
       };
+      if (!this.isMagnifierEntered) {
+        this.isMagnifierEntered = true;
+      } else {
+        this.magnifier = {
+          ...this.magnifier,
+          transitionDuration: "0.5s",
+          transitionTimingFunction: "ease-out",
+        };
+      }
+      ;
     },
     calculateMagnifierPosition(cursor, magnifierCursorDistance, magnifierSize,imageSize) {
       const magnifierOffset = cursor + magnifierCursorDistance + magnifierSize > imageSize ? -magnifierCursorDistance : magnifierCursorDistance;
@@ -211,12 +230,12 @@ export default {
       this.$refs.image.src = canvas.toDataURL();
     },
     getActiveColorIndex(){
-        if(this.activeColor === "red"){
-          return 0
-        }else if(this.activeColor === "green"){
-          return 1;
-        }
-        return 2;
+      if(this.activeColor === "red"){
+        return 0
+      }else if(this.activeColor === "green"){
+        return 1;
+      }
+      return 2;
     }
   },
 };
