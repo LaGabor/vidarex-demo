@@ -26,9 +26,7 @@ To install and set up the Tiny Cinema project, follow these steps:
 
 ## To Do List
 
-1. Solve the colour-changing functionality of the "magnifying glass".<br>
-2. Solve cursor easing functionality".<br>
-3. Refactoring the code.
+1. Refactoring the code.
 
 <div align="center">
  <strong>Thank you for your time!</strong>
