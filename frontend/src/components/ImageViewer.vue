@@ -1,9 +1,9 @@
 <template>
   <div class="container mt-4">
-    <div class="row mb-4">
-      <div class="col-md-8">
+    <div class="main-row">
+      <div style="display: inline-block" class="mr-4">
         <div
-            class="image-container position-relative"
+            class="image-container position-relative mb-3"
             style="width: 768px; height: 432px;"
             @mousemove="moveMagnifier"
             @mouseenter="mouseEnter"
@@ -14,15 +14,15 @@
           <div v-if="showMagnifier" :style="magnifier"></div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div id="zoom-container" style="display: inline-block">
         <div class="zoom-control mb-4">
-          <div class="d-flex  align-items-center">
+          <div class="d-flex align-items-center" style="display: inline-block">
             <i class="bi bi-search"></i>
-            <label for="zoom" class="label m-4">
-              Zoom: {{zoom}}x
+            <label for="zoom" class="label m-2">
+              Zoom: {{ zoom }}x
             </label>
-          </div >
-          <div class="vertical-input">
+          </div>
+          <div class="vertical-input" style="display: inline-block">
             <input
                 id="zoom"
                 class="form-range"
@@ -35,13 +35,11 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="color-controls  d-flex flex-wrap">
+  </div>
+    <div class="color-controls d-flex flex-wrap">
       <div v-for="(color, index) in getRGB" :key="index" class="mx-4">
         <i class="bi bi-brightness-low-fill" :style="{ color: color }"></i>
-        <label class="label m-2">
-          {{ color }}: {{ colorValues[color]}}%
-        </label>
+        <label class="label m-2">{{ color }}: {{ colorValues[color] }}%</label>
         <input
             :id="color"
             class="form-range"
@@ -65,7 +63,7 @@ export default {
       imageSrc: require('@/assets/hague.jpg'),
       zoom: 2,
       showMagnifier: false,
-      magnifier: {borderRadius: "50%"},
+      magnifier: {},
       isMagnifierEntered:false,
       activeColor: "red",
       colorValues: {
@@ -91,8 +89,8 @@ export default {
 
     mouseLeave() {
       this.showMagnifier = false;
-      this.magnifier = {borderRadius: "50%"};
       this.isMagnifierEntered = false;
+      this.magnifier = {};
     },
 
     changeColor(color, value) {
@@ -139,7 +137,7 @@ export default {
 
       this.reColor();
       this.magnifier = {...this.magnifier,
-          backgroundColor: `rgb(${this.colorValues.red}%, ${this.colorValues.green}%, ${this.colorValues.blue}%)`,
+        backgroundColor: `rgb(${this.colorValues.red}%, ${this.colorValues.green}%, ${this.colorValues.blue}%)`,
       }
     },
 
@@ -185,12 +183,13 @@ export default {
           transitionTimingFunction: "ease-out",
         };
       }
-      ;
     },
+
     calculateMagnifierPosition(cursor, magnifierCursorDistance, magnifierSize,imageSize) {
       const magnifierOffset = cursor + magnifierCursorDistance + magnifierSize > imageSize ? -magnifierCursorDistance : magnifierCursorDistance;
       return cursor - magnifierSize / 2 + magnifierOffset;
     },
+
     calculateBackgroundPosition(cursor, zoom, imageSize, magnifierSize) {
       return Math.min(0, Math.max(-(cursor * zoom - magnifierSize / 2), -(imageSize * zoom - magnifierSize)));
     },
@@ -202,6 +201,7 @@ export default {
       this.zoom = Math.min(10, Math.max(1, newZoom));
       this.moveMagnifier(e);
     },
+
     reColor() {
       const canvas = document.createElement("canvas");
       canvas.width = 768;
@@ -229,6 +229,7 @@ export default {
       context.putImageData(imageData, starterXAndY, starterXAndY);
       this.$refs.image.src = canvas.toDataURL();
     },
+
     getActiveColorIndex(){
       if(this.activeColor === "red"){
         return 0
@@ -241,11 +242,7 @@ export default {
 };
 </script>
 
-<style scoped>
-
-.image-container {
-  overflow: hidden;
-}
+<style>
 
 .form-range[id="red"]::-webkit-slider-runnable-track {
   background-color: red;
@@ -268,9 +265,14 @@ export default {
 }
 
 .vertical-input {
-  margin-top:20%;
+  margin-left:20%;
   transform: rotate(-90deg);
-  width:50%
+  width:140%
+}
+
+#zoom-container{
+  position: relative;
+  left:4cm
 }
 
 </style>
