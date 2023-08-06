@@ -45,8 +45,8 @@
             class="form-range"
             type="range"
             step="1"
-            :min="0"
-            :max="100"
+            min="0"
+            max="100"
             :value="colorValues[color]"
             @input="changeColor(color, $event.target.value)"
         />
@@ -105,6 +105,7 @@ export default {
       this.reColor();
     },
     keyDown(e) {
+      e.preventDefault();
       if (e.code === "KeyR") {
         this.activeColor = "red";
       } else if (e.code === "KeyG") {
@@ -118,23 +119,10 @@ export default {
 
     arrowsKeyDown(e) {
       if (e.code === 'ArrowLeft') {
-        if (this.activeColor === "red") {
-          this.colorValues.red = Math.max(0, this.colorValues.red - 1);
-        } else if (this.activeColor === "green") {
-          this.colorValues.green = Math.max(0, this.colorValues.green - 1);
-        } else if (this.activeColor === "blue") {
-          this.colorValues.blue = Math.max(0, this.colorValues.blue - 1);
-        }
+          this.colorValues[this.activeColor] = Math.max(0, this.colorValues[this.activeColor] - 1);
       } else if (e.code === 'ArrowRight') {
-        if (this.activeColor === "red") {
-          this.colorValues.red = Math.min(100, this.colorValues.red + 1);
-        } else if (this.activeColor === "green") {
-          this.colorValues.green = Math.min(100, this.colorValues.green + 1);
-        } else if (this.activeColor === "blue") {
-          this.colorValues.blue = Math.min(100, this.colorValues.blue + 1);
-        }
+          this.colorValues[this.activeColor] = Math.min(100,  parseInt(this.colorValues[this.activeColor]) + 1);
       }else return;
-
       this.reColor();
       this.magnifier = {...this.magnifier,
         backgroundColor: `rgb(${this.colorValues.red}%, ${this.colorValues.green}%, ${this.colorValues.blue}%)`,
@@ -153,13 +141,11 @@ export default {
 
       const magnifierX = this.calculateMagnifierPosition(cursorX, magnifierCursorDistance, magnifierSize, imgWidth);
       const magnifierY = this.calculateMagnifierPosition(cursorY, magnifierCursorDistance, magnifierSize, imgHeight);
-
+      
       const bgPosX = this.calculateBackgroundPosition(cursorX, this.zoom, imgWidth, magnifierSize);
       const bgPosY = this.calculateBackgroundPosition(cursorY, this.zoom, imgHeight, magnifierSize);
-
-
+      
       this.magnifier = {
-        cursor: "none",
         backgroundImage: `url(${this.imageSrc})`,
         backgroundPosition: `${bgPosX}px ${bgPosY}px`,
         backgroundSize: `${imgWidth * this.zoom}px ${imgHeight * this.zoom}px`,
@@ -186,8 +172,8 @@ export default {
     },
 
     calculateMagnifierPosition(cursor, magnifierCursorDistance, magnifierSize,imageSize) {
-      const magnifierOffset = cursor + magnifierCursorDistance + magnifierSize > imageSize ? -magnifierCursorDistance : magnifierCursorDistance;
-      return cursor - magnifierSize / 2 + magnifierOffset;
+      const magnifierOffset = cursor + magnifierCursorDistance + magnifierSize > imageSize ? -magnifierCursorDistance*2 : magnifierCursorDistance;
+      return cursor + magnifierOffset;
     },
 
     calculateBackgroundPosition(cursor, zoom, imageSize, magnifierSize) {
@@ -216,13 +202,12 @@ export default {
       const imageData = context.getImageData(starterXAndY, starterXAndY, canvas.width, canvas.height);
       const data = imageData.data;
 
-      if (!this.originalImageData) {
-        this.originalImageData = imageData;
+      if (!this.originalData) {
         this.originalData = new Uint8ClampedArray(data);
       }
 
       for (let i = 0; i < data.length; i += 4) {
-        data[i+activeColorIndex] = Math.min(255, this.originalData[i+activeColorIndex] * hundredthOfActiveColorValue);
+        data[i+activeColorIndex] = this.originalData[i+activeColorIndex] * hundredthOfActiveColorValue;
 
       }
 
