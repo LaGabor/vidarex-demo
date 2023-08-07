@@ -11,7 +11,7 @@
             @wheel="zooming"
         >
           <img ref="image" :src="imageSrc" alt="City" class="img-fluid" />
-          <div v-if="showMagnifier" :style="magnifier"></div>
+          <div id ='magnifier' v-if="showMagnifier" :style="magnifier"></div>
         </div>
       </div>
       <div id="zoom-container" style="display: inline-block">
@@ -36,7 +36,7 @@
         </div>
       </div>
   </div>
-    <div class="color-controls d-flex flex-wrap">
+    <div class="color-controls d-flex">
       <div v-for="(color, index) in getRGB" :key="index" class="mx-4">
         <i class="bi bi-brightness-low-fill" :style="{ color: color }"></i>
         <label class="label m-2">{{ color }}: {{ colorValues[color] }}%</label>
@@ -94,13 +94,7 @@ export default {
     },
 
     changeColor(color, value) {
-      if (color === "red") {
-        this.colorValues.red = value;
-      } else if (color === "green") {
-        this.colorValues.green = value;
-      } else if (color === "blue") {
-        this.colorValues.blue = value;
-      }
+      this.colorValues[color] = value;
       this.activeColor = color;
       this.reColor();
     },
@@ -133,9 +127,12 @@ export default {
 
       const magnifierSize = 100;
       const magnifierCursorDistance = 50;
-      const {left: imgLeft, top: imgTop} = this.$refs.image.getBoundingClientRect();
-      const cursorX = e.pageX - imgLeft;
-      const cursorY = e.pageY - imgTop;
+      let cursorX = e.offsetX;
+      let cursorY = e.offsetY;
+      if (e.target.getAttribute('id') === 'magnifier') {
+        cursorX = e.target.offsetLeft;
+        cursorY = e.target.offsetTop;
+      }
       const imgWidth = this.$refs.image.width;
       const imgHeight = this.$refs.image.height;
 
@@ -208,7 +205,6 @@ export default {
 
       for (let i = 0; i < data.length; i += 4) {
         data[i+activeColorIndex] = this.originalData[i+activeColorIndex] * hundredthOfActiveColorValue;
-
       }
 
       context.putImageData(imageData, starterXAndY, starterXAndY);
@@ -216,12 +212,7 @@ export default {
     },
 
     getActiveColorIndex(){
-      if(this.activeColor === "red"){
-        return 0
-      }else if(this.activeColor === "green"){
-        return 1;
-      }
-      return 2;
+      return this.getRGB.indexOf(this.activeColor);
     }
   },
 };
